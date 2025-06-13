@@ -99,4 +99,7 @@ Thumbs.db
 # Old project files (cleaned up)
 
 # Vercel
-.vercel/ 
+.vercel/
+
+# Legacy frontend folder (now moved to root)
+frontend/ 
