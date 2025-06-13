@@ -1,7 +1,7 @@
 {
-  "name": "tennis-service-analyzer",
+  "name": "tennis-service-analyzer-root",
   "version": "1.0.0",
-  "description": "Application d'analyse de services au tennis",
+  "private": true,
   "scripts": {
     "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
     "dev:frontend": "cd frontend && npm run dev",
