@@ -2,11 +2,11 @@
   "name": "tennis-backend",
   "version": "1.0.0",
   "description": "Backend API pour l'analyseur de service tennis",
-  "main": "dist/server.js",
+  "main": "dist/index.js",
   "scripts": {
     "dev": "nodemon src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js",
+    "start": "node dist/index.js",
     "test": "jest"
   },
   "dependencies": {
