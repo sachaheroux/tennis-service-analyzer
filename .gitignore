@@ -96,4 +96,7 @@ temp/
 ehthumbs.db
 Thumbs.db
 
-# Old project files (cleaned up) 
+# Old project files (cleaned up)
+
+# Vercel
+.vercel/ 

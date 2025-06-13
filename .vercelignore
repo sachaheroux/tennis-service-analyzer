@@ -1,12 +1,12 @@
 backend/
+backend/**
 node_modules/
 .git/
 *.log
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env*
 package.json
 package-lock.json
 README.md
-DEPLOYMENT.md 
+DEPLOYMENT.md
+tennis-service/
+tennis-service/** 
