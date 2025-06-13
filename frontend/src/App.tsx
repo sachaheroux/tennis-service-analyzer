@@ -7,7 +7,10 @@ interface BallPosition {
   y: number
 }
 
+type AppMode = 'game' | 'score'
+
 function App() {
+  const [mode, setMode] = useState<AppMode>('game')
   const [ballPosition, setBallPosition] = useState<BallPosition | null>(null)
   const [serviceResult, setServiceResult] = useState<ServiceAnalysis | null>(null)
   const [stats, setStats] = useState<ServiceStats | null>(null)
@@ -15,7 +18,7 @@ function App() {
   const courtRef = useRef<HTMLDivElement>(null)
 
   const handleCourtClick = useCallback(async (event: React.MouseEvent<HTMLDivElement>) => {
-    if (!courtRef.current || loading) return
+    if (!courtRef.current || loading || mode !== 'game') return
 
     const rect = courtRef.current.getBoundingClientRect()
     const x = event.clientX - rect.left
@@ -38,23 +41,20 @@ function App() {
       const courtWidth = rect.width
       const courtHeight = rect.height
       
-      const serviceBoxLeft = courtWidth * 0.5
-      const serviceBoxRight = courtWidth * 0.85
-      const serviceBoxTop = courtHeight * 0.25
-      const serviceBoxBottom = courtHeight * 0.75
-
+      // Zone de service (tout le rectangle)
       const isValid = 
-        x >= serviceBoxLeft && 
-        x <= serviceBoxRight && 
-        y >= serviceBoxTop && 
-        y <= serviceBoxBottom
+        x >= 10 && 
+        x <= courtWidth - 10 && 
+        y >= 10 && 
+        y <= courtHeight - 10
 
       let zone = 'Hors service'
       if (isValid) {
+        // Diviser en zones T (haut) et large (bas)
         if (y < courtHeight * 0.5) {
-          zone = 'Service T (haut)'
+          zone = 'Service T'
         } else {
-          zone = 'Service large (bas)'
+          zone = 'Service large'
         }
       }
 
@@ -67,7 +67,7 @@ function App() {
     } finally {
       setLoading(false)
     }
-  }, [loading])
+  }, [loading, mode])
 
   const resetCourt = () => {
     setBallPosition(null)
@@ -100,108 +100,115 @@ function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>🎾 Analyseur de Service Tennis</h1>
-        <p>Cliquez sur le terrain pour placer la balle et analyser le service</p>
+        <div className="header-content">
+          <h1>🎾 Tennis Analyzer</h1>
+          <div className="mode-selector">
+            <select 
+              value={mode} 
+              onChange={(e) => setMode(e.target.value as AppMode)}
+              className="mode-dropdown"
+            >
+              <option value="game">Game Mode</option>
+              <option value="score">Score Mode</option>
+            </select>
+          </div>
+        </div>
       </header>
 
       <main className="main-content">
-        <div className="court-container">
-          <div 
-            ref={courtRef}
-            className="tennis-court"
-            onClick={handleCourtClick}
-          >
-            {/* Lignes du terrain */}
-            <div className="court-lines">
-              {/* Ligne centrale */}
-              <div className="center-line"></div>
-              
-              {/* Lignes de service */}
-              <div className="service-line-left"></div>
-              <div className="service-line-right"></div>
-              
-              {/* Ligne de fond */}
-              <div className="baseline"></div>
-              
-              {/* Lignes latérales */}
-              <div className="sideline-left"></div>
-              <div className="sideline-right"></div>
-              
-              {/* Zone de service droite */}
-              <div className="service-box-right">
-                <div className="service-box-top"></div>
-                <div className="service-box-bottom"></div>
-              </div>
-            </div>
-
-            {/* Balle */}
-            {ballPosition && (
+        {mode === 'game' && (
+          <>
+            <div className="court-container">
               <div 
-                className="ball"
-                style={{
-                  left: ballPosition.x - 8,
-                  top: ballPosition.y - 8
-                }}
-              />
-            )}
+                ref={courtRef}
+                className="service-box"
+                onClick={handleCourtClick}
+              >
+                {/* Ligne centrale horizontale */}
+                <div className="center-line-horizontal"></div>
+                
+                {/* Zone T (haut) */}
+                <div className="service-zone-t">
+                  <span className="zone-label">T</span>
+                </div>
+                
+                {/* Zone large (bas) */}
+                <div className="service-zone-large">
+                  <span className="zone-label">LARGE</span>
+                </div>
 
-            {/* Filet */}
-            <div className="net"></div>
-          </div>
+                {/* Balle */}
+                {ballPosition && (
+                  <div 
+                    className="ball"
+                    style={{
+                      left: ballPosition.x - 8,
+                      top: ballPosition.y - 8
+                    }}
+                  />
+                )}
+              </div>
 
-          <div className="controls">
-            <button onClick={resetCourt} className="reset-button" disabled={loading}>
-              {loading ? 'Analyse...' : 'Effacer'}
-            </button>
-            <button onClick={resetStats} className="reset-button">
-              Réinitialiser Stats
-            </button>
-          </div>
-        </div>
+              <div className="controls">
+                <button onClick={resetCourt} className="action-button" disabled={loading}>
+                  {loading ? 'Analyse...' : 'Effacer'}
+                </button>
+                <button onClick={resetStats} className="action-button secondary">
+                  Reset Stats
+                </button>
+              </div>
+            </div>
 
-        {/* Résultats */}
-        {serviceResult && (
-          <div className="results">
-            <h2>Résultat du service</h2>
-            <div className={`result-status ${serviceResult.isValid ? 'in' : 'out'}`}>
-              {serviceResult.isValid ? '✅ SERVICE VALIDE' : '❌ SERVICE FAUTE'}
-            </div>
-            <div className="result-zone">
-              Zone: {serviceResult.zone}
-            </div>
-            <div className="precision">
-              Précision: {Math.round(serviceResult.precision)}%
-            </div>
-            {ballPosition && (
-              <div className="coordinates">
-                Position: ({Math.round(ballPosition.x)}, {Math.round(ballPosition.y)})
+            {/* Résultats */}
+            {serviceResult && (
+              <div className="results">
+                <div className={`result-status ${serviceResult.isValid ? 'in' : 'out'}`}>
+                  {serviceResult.isValid ? '✅ IN' : '❌ OUT'}
+                </div>
+                <div className="result-details">
+                  <div className="result-zone">
+                    {serviceResult.zone}
+                  </div>
+                  <div className="precision">
+                    {Math.round(serviceResult.precision)}% précision
+                  </div>
+                </div>
               </div>
             )}
-          </div>
+
+            {/* Statistiques */}
+            {stats && (
+              <div className="stats">
+                <h3>Statistiques</h3>
+                <div className="stats-grid">
+                  <div className="stat-item">
+                    <div className="stat-value">{stats.totalServices}</div>
+                    <div className="stat-label">Total</div>
+                  </div>
+                  <div className="stat-item">
+                    <div className="stat-value">{stats.validServices}</div>
+                    <div className="stat-label">Valides</div>
+                  </div>
+                  <div className="stat-item">
+                    <div className="stat-value">{stats.faultServices}</div>
+                    <div className="stat-label">Fautes</div>
+                  </div>
+                  <div className="stat-item">
+                    <div className="stat-value">
+                      {stats.totalServices > 0 ? Math.round((stats.validServices / stats.totalServices) * 100) : 0}%
+                    </div>
+                    <div className="stat-label">Réussite</div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
         )}
 
-        {/* Statistiques */}
-        {stats && (
-          <div className="stats">
-            <h2>Statistiques</h2>
-            <div className="stats-grid">
-              <div className="stat-item">
-                <span className="stat-label">Total services:</span>
-                <span className="stat-value">{stats.totalServices}</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-label">Services valides:</span>
-                <span className="stat-value">{stats.validServices}</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-label">Fautes:</span>
-                <span className="stat-value">{stats.faultServices}</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-label">Précision moyenne:</span>
-                <span className="stat-value">{Math.round(stats.averagePrecision)}%</span>
-              </div>
-            </div>
+        {mode === 'score' && (
+          <div className="score-mode">
+            <h2>Score Mode</h2>
+            <p>Mode score en développement...</p>
           </div>
         )}
       </main>
