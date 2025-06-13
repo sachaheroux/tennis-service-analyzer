@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import './App.css'
 import { apiService, ServiceAnalysis, ServiceStats } from './services/api'
 
@@ -15,7 +15,7 @@ function App() {
   const [serviceResult, setServiceResult] = useState<ServiceAnalysis | null>(null)
   const [stats, setStats] = useState<ServiceStats | null>(null)
   const [loading, setLoading] = useState(false)
-  const courtRef = useRef<HTMLDivElement>(null)
+
 
   const handleServiceBoxClick = useCallback(async (event: React.MouseEvent<SVGRectElement>) => {
     if (loading || mode !== 'score') return
@@ -69,57 +69,7 @@ function App() {
     }
   }, [loading, mode])
 
-  const handleCourtClick = useCallback(async (event: React.MouseEvent<HTMLDivElement>) => {
-    if (!courtRef.current || loading || mode !== 'game') return
 
-    const rect = courtRef.current.getBoundingClientRect()
-    const x = event.clientX - rect.left
-    const y = event.clientY - rect.top
-
-    setBallPosition({ x, y })
-    setLoading(true)
-
-    try {
-      // Appel à l'API backend pour analyser le service
-      const analysis = await apiService.analyzeService(x, y)
-      setServiceResult(analysis)
-      
-      // Récupérer les statistiques mises à jour
-      const updatedStats = await apiService.getStats()
-      setStats(updatedStats)
-    } catch (error) {
-      console.error('Erreur lors de l\'analyse du service:', error)
-      // Fallback vers le calcul local en cas d'erreur
-      const courtWidth = rect.width
-      const courtHeight = rect.height
-      
-      // Zone de service (tout le rectangle)
-      const isValid = 
-        x >= 10 && 
-        x <= courtWidth - 10 && 
-        y >= 10 && 
-        y <= courtHeight - 10
-
-      let zone = 'Hors service'
-      if (isValid) {
-        // Diviser en zones T (haut) et large (bas)
-        if (y < courtHeight * 0.5) {
-          zone = 'Service T'
-        } else {
-          zone = 'Service large'
-        }
-      }
-
-      setServiceResult({
-        isValid,
-        zone,
-        precision: isValid ? Math.random() * 100 : 0,
-        ballPosition: { x, y }
-      })
-    } finally {
-      setLoading(false)
-    }
-  }, [loading, mode])
 
   const resetCourt = () => {
     setBallPosition(null)
