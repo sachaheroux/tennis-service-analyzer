@@ -16,7 +16,5 @@
       "src": "/(.*)",
       "dest": "frontend/dist/$1"
     }
-  ],
-  "functions": {},
-  "rewrites": []
+  ]
 } 
