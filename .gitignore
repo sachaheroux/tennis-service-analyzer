@@ -96,8 +96,4 @@ temp/
 ehthumbs.db
 Thumbs.db
 
-# Old project files
-tennis-service/
-tennis-app/
-src/
-tennis-service-analyzer/ 
+# Old project files (cleaned up) 
